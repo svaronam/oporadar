@@ -1,0 +1,38 @@
+{
+  "_comentario": "Copia este archivo como config.json y ajústalo. Las claves que empiezan por _ se ignoran.",
+
+  "host": "0.0.0.0",
+  "puerto": 8790,
+  "token": "",
+  "_token": "Si pones un token, la app y la web lo pedirán. Recomendado si la Pi está en una red que no es la tuya.",
+
+  "hora_barrida": "09:20",
+  "_hora_barrida": "El BOE sale ~07:30 y el BOC antes de las 9:00. Una barrida al día basta; al arrancar recupera días perdidos.",
+  "dias_atras": 4,
+
+  "vigilar_cada_horas": 4,
+  "_vigilar_cada_horas": "Cada cuánto se revisan las páginas de las convocatorias a las que estás apuntado (entre las 7 y las 23 h).",
+
+  "grupos": ["A1", "A2", "B", "C1"],
+
+  "fuentes": { "boe": true, "boc": true, "bocyl": true, "bopa": true, "bopv": true },
+  "_fuentes": "BOE (todo lo estatal + extracto de ayuntamientos, diputaciones y universidades de España), BOC (Cantabria), BOCYL (Castilla y León), BOPA (Asturias), BOPV (País Vasco).",
+  "boc_url_plantilla": "",
+
+  "palabras_extra": [],
+  "_palabras_extra": "Términos que quieras que cuenten como informática además de los de serie, p. ej. [\"telecomunicaciones\", \"transformación digital\"]",
+
+  "rss": [],
+  "_rss": "Fuentes RSS adicionales: [{\"nombre\": \"Empleo UC\", \"url\": \"https://.../rss\", \"zona\": \"cantabria\"}]. zona: cantabria | limitrofe | estatal | cercana | resto",
+
+  "notificar": {
+    "niveles": ["prioritaria", "interesante", "vigilar"],
+    "tipos": ["convocatoria", "oep"]
+  },
+  "_notificar": "Añade \"seguimiento\" a tipos si también quieres aviso de listas de admitidos, fechas de examen, etc.",
+
+  "pesos": {},
+  "_pesos": "Para cambiar el gradiente. Ejemplo: {\"zona\": {\"estatal\": 28}, \"sistema\": {\"concurso-oposicion\": 14}, \"niveles\": {\"prioritaria\": 80}}",
+
+  "pausa_entre_peticiones": 0.4
+}

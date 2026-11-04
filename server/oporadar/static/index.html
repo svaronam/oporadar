@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1720">
+<title>OpoRadar</title>
+<style>
+:root{
+  --bg:#f4f1ea; --card:#fffdf8; --ink:#1b1f24; --mute:#6b6f76; --line:#e3ddd0;
+  --p1:#c2410c; --p2:#b7791f; --p3:#2f6f9f; --p4:#8a8f96; --ok:#2f7d4f; --pin:#7c3aed;
+  --chip:#ece6d9; --accent:#1b1f24;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f1720; --card:#16202b; --ink:#e8e4da; --mute:#97a0ab; --line:#243140;
+    --p1:#f07a3c; --p2:#e2b04a; --p3:#6aa9d8; --p4:#7c8792; --ok:#5fbf86; --pin:#a78bfa; --chip:#1e2a37; --accent:#e8e4da; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.45 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 16px 8px;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:10px}
+.logo{font-weight:800;letter-spacing:-.02em;font-size:20px}
+.logo span{color:var(--p1)}
+.top .sp{flex:1}
+.ibtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;height:36px;min-width:36px;
+  padding:0 10px;font-size:14px;cursor:pointer}
+.vistas{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 4px}
+.vistas button{border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:12px;height:42px;
+  font-size:15px;font-weight:700;cursor:pointer;position:relative}
+.vistas button.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--p1);
+  color:#fff;font-size:12px;font-weight:800;margin-left:6px;vertical-align:1px}
+.stats{display:flex;gap:6px;margin:10px 0 8px;overflow-x:auto;scrollbar-width:none}
+.stats::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid transparent;background:var(--chip);color:var(--ink);border-radius:999px;padding:6px 12px;
+  font-size:13px;cursor:pointer;white-space:nowrap}
+.chip b{font-variant-numeric:tabular-nums;margin-left:4px}
+.chip.on{background:var(--accent);color:var(--bg)}
+.chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.row2{display:flex;gap:6px;align-items:center}
+.seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;flex:0 0 auto}
+.seg button{border:0;background:transparent;color:var(--mute);padding:6px 10px;border-radius:8px;font-size:13px;cursor:pointer}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+input[type=search],input[type=text],input[type=url]{flex:1;min-width:0;height:38px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:10px;padding:0 10px;font-size:14px;width:100%}
+main{padding:12px 16px 90px;max-width:780px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;
+  display:grid;grid-template-columns:52px 1fr;gap:12px;transition:outline-color .6s}
+.card.hl{outline:2px solid var(--p1);outline-offset:2px}
+.card.visto{opacity:.8}
+.score{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:17px;
+  font-variant-numeric:tabular-nums;position:relative;cursor:pointer}
+.score::after{content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(var(--c) calc(var(--v)*1%), var(--line) 0);
+  -webkit-mask:radial-gradient(circle, transparent 20px, #000 21px);mask:radial-gradient(circle, transparent 20px, #000 21px)}
+.pinball{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:22px;
+  background:color-mix(in srgb, var(--pin) 16%, transparent)}
+.lvl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--c)}
+.lvl .meta{text-transform:none;letter-spacing:0;font-weight:600}
+.titular{overflow-wrap:break-word;hyphens:auto;font-weight:800;font-size:18px;line-height:1.25;margin:3px 0 2px;text-transform:uppercase;letter-spacing:-.005em}
+.titular .g{color:var(--c)}
+.titular .sep{color:var(--mute);font-weight:400;margin:0 4px}
+.sub{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:13.5px;color:var(--mute);margin-bottom:4px}
+.km{font-weight:700;color:var(--ink);background:var(--chip);border-radius:6px;padding:1px 7px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.tit{color:var(--mute);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.tit.open{-webkit-line-clamp:unset}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 6px}
+.tag{font-size:12px;padding:2px 8px;border-radius:6px;background:var(--chip);color:var(--ink)}
+.tag.good{background:color-mix(in srgb, var(--ok) 18%, transparent);color:var(--ok)}
+.tag.bad{background:color-mix(in srgb, var(--p1) 14%, transparent);color:var(--p1)}
+.det{font-size:13px;border-left:3px solid var(--line);padding-left:8px;margin:6px 0;opacity:.9}
+.plazo{font-size:13px;margin-top:4px}
+.plazo b{color:var(--p1)}
+.why{display:none;font-size:12.5px;background:var(--chip);border-radius:10px;padding:8px 10px;margin-top:8px}
+.why.open{display:block}
+.why div{display:flex;justify-content:space-between;gap:10px}
+.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.acts a,.acts button,.btn{font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:9px;
+  padding:6px 10px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.acts .on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.acts .pin{border-color:var(--pin);color:var(--pin);font-weight:700}
+.acts .pin.on{background:var(--pin);color:#fff}
+.meta{font-size:12px;color:var(--mute)}
+.empty{text-align:center;color:var(--mute);padding:40px 10px}
+/* apuntado */
+.ap{grid-template-columns:52px 1fr}
+.sec{margin-top:12px}
+.sec h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.nov{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:start;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.nov:first-of-type{border-top:0}
+.nov a{color:var(--ink);text-decoration:none}
+.nov a:hover{text-decoration:underline}
+.nov .ic{font-size:11px;font-weight:800;padding:2px 6px;border-radius:5px;background:var(--chip);color:var(--mute);margin-top:2px}
+.nov.nueva{background:color-mix(in srgb, var(--pin) 9%, transparent);border-radius:8px;padding:8px;margin:0 -8px}
+.nov.nueva .ic{background:var(--pin);color:#fff}
+.nov .when{font-size:12px;color:var(--mute);white-space:nowrap}
+.pill{font-size:10.5px;font-weight:800;color:#fff;background:var(--pin);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:1px}
+details summary{cursor:pointer;font-size:13px;color:var(--mute);padding:6px 0}
+.vig{display:flex;gap:8px;align-items:center;font-size:13px;padding:6px 0;border-top:1px solid var(--line)}
+.vig .u{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vig .err{color:var(--p1)}
+.addrow{display:flex;gap:6px;margin-top:8px}
+.nuevo-btn{width:100%;height:44px;border:1.5px dashed var(--line);background:transparent;color:var(--ink);border-radius:12px;
+  font-size:14.5px;font-weight:700;cursor:pointer;margin-bottom:12px}
+.help{font-size:13px;color:var(--mute);background:var(--chip);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+footer{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--mute)}
+footer .sp{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.primary{background:var(--accent);color:var(--bg);border:0;border-radius:10px;height:38px;padding:0 14px;font-weight:600;cursor:pointer}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);max-width:520px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h3{margin:4px 0 8px}
+dialog label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+dialog table{width:100%;border-collapse:collapse;font-size:13px}
+dialog td{padding:4px 0;border-bottom:1px solid var(--line)}
+dialog td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.drow{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+[hidden]{display:none!important}
+#alertas{max-width:780px;margin:10px auto 0;padding:0 16px}
+.alerta{display:flex;gap:10px;align-items:flex-start;background:color-mix(in srgb, var(--p2) 16%, var(--card));
+  border:1px solid color-mix(in srgb, var(--p2) 45%, transparent);border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:6px}
+.alerta b{white-space:nowrap}
+.alerta button{margin-left:auto;border:0;background:transparent;color:var(--mute);font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="logo">Opo<span>Radar</span></div>
+    <div class="sp"></div>
+    <button class="ibtn" id="bInfo" title="Cómo se puntúa">?</button>
+    <button class="ibtn" id="bApp" hidden title="Ajustes de la app">⚙</button>
+  </div>
+  <div class="vistas">
+    <button id="vRadar" class="on">Radar</button>
+    <button id="vAp">📌 Apuntado<span class="badge" id="bdg" hidden></span></button>
+  </div>
+  <div id="filtros">
+    <div class="stats" id="niveles"></div>
+    <div class="row2">
+      <div class="seg" id="tipos">
+        <button data-t="convocatoria,oep" class="on">Nuevas</button>
+        <button data-t="seguimiento,correccion">Seguimiento</button>
+        <button data-t="">Todo</button>
+      </div>
+      <input type="search" id="q" placeholder="Buscar puesto, lugar…">
+    </div>
+  </div>
+</header>
+<div id="alertas" hidden></div>
+<main id="lista"><div class="empty">Cargando…</div></main>
+<footer>
+  <span class="sp" id="estado">—</span>
+  <button class="primary" id="bBarrer">Barrer ahora</button>
+</footer>
+
+<dialog id="dInfo">
+  <h3>Cómo se ordena</h3>
+  <p class="meta">Cada anuncio de informática recibe 0–100 puntos sumando:</p>
+  <table>
+    <tr><td>Cantabria · limítrofe (Asturias, Burgos, Palencia, León, Bizkaia, País Vasco, CyL) · estatal AGE · norte cercano · resto</td><td>35 · 25 · 22 · 15 · 5</td></tr>
+    <tr><td>Oposición · concurso-oposición · concurso</td><td>20 · 12 · 4</td></tr>
+    <tr><td>Funcionario de carrera · laboral fijo · temporal/bolsa</td><td>20 · 10 · 2</td></tr>
+    <tr><td>Grupo A1, A2, B o C1 · sin indicar · otro (C2/E)</td><td>15 · 7 · −45</td></tr>
+    <tr><td>Convocatoria · oferta de empleo · fase/corrección</td><td>10 · 6 · 2</td></tr>
+    <tr><td>Sólo promoción interna</td><td>−30</td></tr>
+    <tr><td>Listas, tribunales, correcciones (no abren plazo)</td><td>× 0,6</td></tr>
+  </table>
+  <p class="meta"><b style="color:var(--p1)">Prioritaria</b> ≥ 75 · <b style="color:var(--p2)">Interesante</b> ≥ 55 ·
+    <b style="color:var(--p3)">A vigilar</b> ≥ 35 · <b style="color:var(--p4)">Baja</b> &lt; 35 (sin aviso).
+    Los km son por carretera desde Santander, aproximados. Los pesos se cambian en config.json.</p>
+  <p class="meta"><b>Fuentes:</b> BOE (Estado, y el extracto de todas las convocatorias de ayuntamientos, diputaciones y
+    universidades de España), BOC (Cantabria), BOPA (Asturias), BOCYL (Castilla y León) y BOPV (País Vasco). Si alguna deja
+    de responder o pasa varios días sin anuncios, verás un aviso ⚠ aquí y en el móvil.</p>
+  <p class="meta"><b>📌 Apuntado:</b> pulsa «Me apunto» en una convocatoria (o añádela a mano) y pega la URL de su página
+    (sede electrónica, portal de empleo…). Se revisa cada pocas horas y te avisa de cada documento nuevo. Además, lo que salga
+    en BOE/BOC del mismo organismo se añade solo.</p>
+  <form method="dialog" class="drow"><button class="primary">Entendido</button></form>
+</dialog>
+
+<dialog id="dNuevo">
+  <h3>Añadir convocatoria</h3>
+  <p class="meta">Para las que ya seguías o que el radar no ha encontrado.</p>
+  <form id="fNuevo">
+    <label>Puesto *</label><input type="text" name="puesto" required placeholder="Técnico de Informática y Administración Electrónica">
+    <label>Organismo *</label><input type="text" name="organismo" required placeholder="Ayuntamiento de Tarazona">
+    <label>Grupo</label><input type="text" name="grupo" placeholder="A2">
+    <label>Página de la convocatoria (para vigilar documentos nuevos)</label>
+    <input type="url" name="url" placeholder="https://tarazona.sedelectronica.es/transparency/…">
+    <div class="drow">
+      <button type="button" class="btn" onclick="this.closest('dialog').close()">Cancelar</button>
+      <button class="primary">Añadir y apuntarme</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const NIV = {
+  prioritaria:{n:"Prioritaria", c:"var(--p1)"}, interesante:{n:"Interesante", c:"var(--p2)"},
+  vigilar:{n:"A vigilar", c:"var(--p3)"}, baja:{n:"Baja", c:"var(--p4)"}, apuntada:{n:"Manual", c:"var(--pin)"}
+};
+const ZONA = {cantabria:"Cantabria", limitrofe:"Limítrofe", estatal:"Estatal (AGE)", cercana:"Norte cercano", resto:"Resto de España", desconocida:"Zona ?"};
+const SIS = {"oposicion":"Oposición","concurso-oposicion":"Concurso-oposición","concurso":"Concurso"};
+const VIN = {"funcionario":"Funcionario de carrera","laboral":"Laboral fijo","temporal":"Temporal / bolsa"};
+const TIPO = {convocatoria:"Convocatoria", oep:"Oferta de empleo", seguimiento:"Fase del proceso", correccion:"Corrección", provision:"Provisión", otro:"Otro"};
+
+let TOKEN = new URLSearchParams(location.search).get("token") || "";
+try { if (TOKEN) localStorage.setItem("opo_token", TOKEN); else TOKEN = localStorage.getItem("opo_token") || ""; } catch(e){}
+
+const st = { vista:"radar", nivel:"", tipo:"convocatoria,oep", q:"", estado:"" };
+const $ = s => document.querySelector(s);
+
+async function api(path, opts={}) {
+  opts.headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{}, TOKEN?{"X-Token":TOKEN}:{});
+  const r = await fetch(path, opts);
+  if (r.status === 401) {
+    const t = prompt("Token del servidor OpoRadar:");
+    if (t) { TOKEN = t; try{localStorage.setItem("opo_token", t)}catch(e){}; return api(path, opts); }
+  }
+  return r.json();
+}
+const post = (p, b={}) => api(p, {method:"POST", body: JSON.stringify(b)});
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function diasHasta(iso){ if(!iso) return null; return Math.ceil((new Date(iso+"T23:59:59")-new Date())/86400000); }
+function hace(ts){
+  if(!ts) return "nunca";
+  const s = Date.now()/1000 - ts;
+  if (s < 90) return "ahora";
+  if (s < 3600) return `hace ${Math.round(s/60)} min`;
+  if (s < 86400) return `hace ${Math.round(s/3600)} h`;
+  return new Date(ts*1000).toLocaleDateString("es-ES",{day:"numeric",month:"short"});
+}
+function host(u){ try{ return new URL(u).host.replace(/^www\./,""); }catch(e){ return u; } }
+
+/* ---------- titular grande: A2 · TÉCNICO INFORMÁTICO · JAÉN ---------- */
+function titular(it, color){
+  const g = it.grupos && it.grupos.length ? it.grupos.join("/") : "¿Grupo?";
+  const puesto = it.puesto || it.titulo;
+  const lugar = it.lugar || it.organismo || "";
+  return `<div class="titular" style="--c:${color}"><span class="g">${esc(g)}</span><span class="sep">·</span>${esc(puesto)}${lugar?`<span class="sep">·</span>${esc(lugar)}`:""}</div>`;
+}
+function subtitulo(it){
+  const p = [];
+  if (it.km != null) p.push(`<span class="km">${it.km === 0 ? "En Santander" : "≈ " + it.km + " km"}</span>`);
+  else if (it.zona === "estatal") p.push(`<span class="km">Destino estatal</span>`);
+  if (it.organismo) p.push(`<span>${esc(it.organismo)}</span>`);
+  if (it.escala) p.push(`<span>${esc(it.escala)}</span>`);
+  return `<div class="sub">${p.join("")}</div>`;
+}
+function etiquetas(it){
+  const t = [];
+  t.push(`<span class="tag ${it.zona==='cantabria'?'good':''}">${ZONA[it.zona]||it.zona||"?"}</span>`);
+  if (it.sistema) t.push(`<span class="tag ${it.sistema==='oposicion'?'good':''}">${SIS[it.sistema]}</span>`);
+  if (it.vinculo) t.push(`<span class="tag ${it.vinculo==='funcionario'?'good':it.vinculo==='temporal'?'bad':''}">${VIN[it.vinculo]}</span>`);
+  if (it.grupo_inferido) t.push(`<span class="tag">grupo deducido</span>`);
+  if (it.acceso==="interna") t.push(`<span class="tag bad">Promoción interna</span>`);
+  if (it.tipo && it.fuente!=="MANUAL") t.push(`<span class="tag">${TIPO[it.tipo]||it.tipo}</span>`);
+  return `<div class="tags">${t.join("")}</div>`;
+}
+function plazoHtml(it){
+  if (!it.plazo_txt) return "";
+  const d = diasHasta(it.plazo_fin);
+  const fin = it.plazo_fin ? new Date(it.plazo_fin).toLocaleDateString("es-ES",{day:"numeric",month:"short"}) : "";
+  return `<div class="plazo">⏳ Plazo: ${esc(it.plazo_txt)}${fin?` · hasta <b>${fin}</b>`:""}${d!==null?(d>=0?` (quedan ${d} d)`:" (cerrado)"):""}</div>`;
+}
+
+function tarjeta(it){
+  const nv = NIV[it.nivel] || NIV.baja;
+  const why = it.desglose.map(([k,v]) => `<div><span>${esc(k)}</span><span>${v>0?"+":""}${v}</span></div>`).join("");
+  const fecha = new Date(it.fecha_pub).toLocaleDateString("es-ES",{weekday:"short", day:"numeric", month:"short"});
+  const bt = (e, txt, cls="") => `<button data-e="${e}" class="${cls} ${it.estado===e?'on':''}">${txt}</button>`;
+  return `<article class="card ${it.estado==='visto'?'visto':''}" id="item-${it.id}" data-id="${it.id}">
+    <div><div class="score" style="--c:${nv.c};--v:${it.score}" data-why>${it.score}</div></div>
+    <div>
+      <div class="lvl" style="--c:${nv.c}">${nv.n} · <span class="meta">${it.fuente} · ${fecha}</span></div>
+      ${titular(it, nv.c)}
+      ${subtitulo(it)}
+      <div class="tit" data-tit>${esc(it.titulo)}</div>
+      ${etiquetas(it)}
+      ${it.detalle?`<div class="det">${esc(it.detalle)}</div>`:""}
+      ${plazoHtml(it)}
+      <div class="why">${why}<div><b>Total</b><b>${it.score}</b></div></div>
+      <div class="acts">
+        ${bt("apuntado", it.estado==="apuntado" ? "📌 Apuntado" : "📌 Me apunto", "pin")}
+        <a href="${esc(it.url)}" target="_blank" rel="noopener">Abrir ${it.fuente}</a>
+        ${it.url_pdf && it.url_pdf!==it.url?`<a href="${esc(it.url_pdf)}" target="_blank" rel="noopener">PDF</a>`:""}
+        ${bt("favorito","★")}${bt("descartado","✕")}
+      </div>
+    </div></article>`;
+}
+
+/* ---------- vista Apuntado ---------- */
+const ORIGEN = {web:"WEB", BOE:"BOE", BOC:"BOC", MANUAL:"DOC"};
+function novHtml(n){
+  const nueva = !n.leida && !n.inicial;
+  return `<div class="nov ${nueva?'nueva':''}">
+    <span class="ic">${ORIGEN[n.origen]||esc(n.origen)}</span>
+    <a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.titulo)}${nueva?'<span class="pill">NUEVO</span>':''}</a>
+    <span class="when">${n.inicial?"":hace(n.ts)}</span></div>`;
+}
+function vigHtml(v){
+  const estado = v.error ? `<span class="err">⚠ ${esc(v.error)}</span>` :
+    `<span class="meta">${v.n_docs} docs · ${hace(v.ultimo_check)}</span>`;
+  return `<div class="vig" data-vid="${v.id}">
+    <span>🌐</span><span class="u"><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.nombre || host(v.url))}</a><br>${estado}</span>
+    <button class="btn" data-rv>Revisar</button><button class="btn" data-bv>✕</button></div>`;
+}
+function tarjetaAp(it){
+  const color = (NIV[it.nivel]||NIV.apuntada).c;
+  const nuevas = it.novedades.filter(n => !n.inicial);
+  const iniciales = it.novedades.filter(n => n.inicial);
+  return `<article class="card ap" id="apuntado-${it.id}" data-id="${it.id}">
+    <div><div class="pinball">📌</div></div>
+    <div>
+      <div class="lvl" style="--c:var(--pin)">Apuntado${it.sin_leer?` · <span class="badge" style="margin:0">${it.sin_leer} nueva${it.sin_leer>1?"s":""}</span>`:""}
+        ${it.score!=null?` · <span class="meta">${it.score} pts</span>`:""}</div>
+      ${titular(it, color)}
+      ${subtitulo(it)}
+      ${plazoHtml(it)}
+      <div class="sec"><h4>Novedades</h4>
+        ${nuevas.length ? nuevas.map(novHtml).join("") : `<div class="meta">Aún nada nuevo. Te avisaré en cuanto aparezca un documento o anuncio.</div>`}
+        ${iniciales.length ? `<details><summary>Documentos que ya había (${iniciales.length})</summary>${iniciales.map(novHtml).join("")}</details>` : ""}
+      </div>
+      <div class="sec"><h4>Páginas vigiladas</h4>
+        ${it.vigilancias.length ? it.vigilancias.map(vigHtml).join("") :
+          `<div class="meta">Pega la página de la convocatoria (sede electrónica, portal de empleo…) para recibir sus documentos nuevos.</div>`}
+        <form class="addrow" data-add><input type="url" placeholder="https://… página de la convocatoria" required><button class="primary">Vigilar</button></form>
+      </div>
+      <div class="acts">
+        ${it.sin_leer?`<button data-leido>✓ Marcar leídas</button>`:""}
+        ${it.url?`<a href="${esc(it.url)}" target="_blank" rel="noopener">${it.fuente==="MANUAL"?"Abrir página":"Abrir "+it.fuente}</a>`:""}
+        <button data-desap>Desapuntarme</button>
+      </div>
+    </div></article>`;
+}
+
+let ITEMS = [], APS = [];
+async function cargar(){
+  if (st.vista === "apuntado") return cargarAp();
+  const p = new URLSearchParams();
+  if (st.nivel) p.set("nivel", st.nivel);
+  if (st.tipo) p.set("tipo", st.tipo);
+  if (st.q) p.set("q", st.q);
+  if (st.estado) p.set("estado", st.estado);
+  const d = await api("/api/items?"+p);
+  ITEMS = d.items || [];
+  ITEMS.sort((a,b)=> (b.fecha_pub.localeCompare(a.fecha_pub)) || (b.score-a.score));
+  $("#lista").innerHTML = ITEMS.length ? ITEMS.map(tarjeta).join("") :
+    `<div class="empty">Nada por aquí todavía.<br>La barrida diaria revisa BOE y BOC; también puedes pulsar «Barrer ahora».</div>`;
+  resaltar();
+}
+async function cargarAp(){
+  const d = await api("/api/apuntadas");
+  APS = d.items || [];
+  $("#lista").innerHTML = `<button class="nuevo-btn" id="bNuevo">＋ Añadir convocatoria a mano</button>` +
+    (APS.length ? APS.map(tarjetaAp).join("") :
+     `<div class="help">Aquí aparecerán las convocatorias en las que te apuntes. Pulsa <b>📌 Me apunto</b> en el Radar o añádela a mano,
+      pega la URL de su página y OpoRadar te avisará de cada PDF o anuncio nuevo (listas, fechas de examen, notas…).</div>`);
+  resaltar();
+}
+function resaltar(){
+  if (!location.hash) return;
+  const el = document.querySelector(location.hash);
+  if (el){ el.scrollIntoView({block:"start"}); el.classList.add("hl"); setTimeout(()=>el.classList.remove("hl"), 2500); }
+}
+
+async function cargarEstado(){
+  const e = await api("/api/estado");
+  const c = e.contadores || {};
+  const tot = ["prioritaria","interesante","vigilar","baja"].reduce((a,k)=>a+(c[k]||0),0);
+  const chips = [`<button class="chip ${!st.nivel&&!st.estado?'on':''}" data-n="">Todas<b>${tot}</b></button>`];
+  for (const k of ["prioritaria","interesante","vigilar","baja"])
+    chips.push(`<button class="chip ${st.nivel===k?'on':''}" data-n="${k}"><span class="dot" style="background:${NIV[k].c}"></span>${NIV[k].n}<b>${c[k]||0}</b></button>`);
+  chips.push(`<button class="chip ${st.estado==='favorito'?'on':''}" data-s="favorito">★ Guardadas</button>`);
+  $("#niveles").innerHTML = chips.join("");
+  const bdg = $("#bdg");
+  if (c._sin_leer) { bdg.hidden = false; bdg.textContent = c._sin_leer; }
+  else if (c._apuntadas) { bdg.hidden = false; bdg.textContent = c._apuntadas; bdg.style.background = "var(--pin)"; }
+  else bdg.hidden = true;
+  if (c._sin_leer) bdg.style.background = "var(--p1)";
+  const b = e.barrida || {};
+  if (b.en_curso) $("#estado").textContent = "⏳ " + b.mensaje;
+  else {
+    const ult = (e.escaneos||[])[0];
+    $("#estado").textContent = (ult ? `Última: ${new Date(ult.ts*1000).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}` : "Sin barridas aún")
+      + ` · diaria ${e.hora_barrida}` + (e.fuentes ? ` · ${e.fuentes.join(", ")}` : "");
+  }
+  pintarAlertas(e.alertas || []);
+  return b.en_curso;
+}
+function pintarAlertas(al){
+  let vistas = [];
+  try { vistas = JSON.parse(localStorage.getItem("opo_alertas_vistas") || "[]"); } catch(e){}
+  const mostrar = al.filter(a => !vistas.includes(a.id));
+  const box = $("#alertas");
+  box.hidden = !mostrar.length;
+  box.innerHTML = mostrar.map(a => `<div class="alerta"><b>⚠ ${esc(a.fuente)}</b><span>${esc(a.texto)}</span>
+    <button data-al="${a.id}" title="Ocultar">✕</button></div>`).join("");
+}
+$("#alertas").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-al]"); if (!b) return;
+  try { const v = JSON.parse(localStorage.getItem("opo_alertas_vistas") || "[]"); v.push(+b.dataset.al);
+        localStorage.setItem("opo_alertas_vistas", JSON.stringify(v.slice(-50))); } catch(e){}
+  b.closest(".alerta").remove();
+});
+
+function vista(v){
+  st.vista = v;
+  $("#vRadar").classList.toggle("on", v==="radar");
+  $("#vAp").classList.toggle("on", v==="apuntado");
+  $("#filtros").hidden = v !== "radar";
+  cargar();
+}
+$("#vRadar").onclick = () => { history.replaceState(null,"",location.pathname+location.search); vista("radar"); };
+$("#vAp").onclick = () => { history.replaceState(null,"",location.pathname+location.search); vista("apuntado"); };
+
+$("#niveles").addEventListener("click", ev => {
+  const b = ev.target.closest(".chip"); if(!b) return;
+  if (b.dataset.s !== undefined){ st.estado = st.estado===b.dataset.s ? "" : b.dataset.s; st.nivel=""; }
+  else { st.nivel = b.dataset.n; st.estado = ""; }
+  cargarEstado(); cargar();
+});
+$("#tipos").addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if(!b) return;
+  document.querySelectorAll("#tipos button").forEach(x=>x.classList.toggle("on", x===b));
+  st.tipo = b.dataset.t; cargar();
+});
+let tq; $("#q").addEventListener("input", ev => { clearTimeout(tq); tq = setTimeout(()=>{ st.q = ev.target.value.trim(); cargar(); }, 300); });
+
+$("#lista").addEventListener("click", async ev => {
+  if (ev.target.closest("#bNuevo")) { $("#fNuevo").reset(); $("#dNuevo").showModal(); return; }
+  const card = ev.target.closest(".card"); if(!card) return;
+  const id = card.dataset.id;
+  if (card.classList.contains("ap")) {
+    if (ev.target.closest("[data-leido]")) { await post(`/api/items/${id}/leido`); cargarAp(); cargarEstado(); return; }
+    if (ev.target.closest("[data-desap]")) {
+      if (!confirm("¿Quitar esta convocatoria de Apuntado? Se dejarán de vigilar sus páginas.")) return;
+      await post(`/api/items/${id}/estado`, {estado:"favorito"}); cargarAp(); cargarEstado(); return;
+    }
+    const vrow = ev.target.closest(".vig");
+    if (vrow && ev.target.closest("[data-rv]")) {
+      ev.target.textContent = "…";
+      const r = await post(`/api/vigilancias/${vrow.dataset.vid}/revisar`);
+      if (r.nuevos) alert(`${r.nuevos} documento(s) nuevo(s)`);
+      cargarAp(); cargarEstado(); return;
+    }
+    if (vrow && ev.target.closest("[data-bv]")) {
+      if (!confirm("¿Dejar de vigilar esta página?")) return;
+      await post(`/api/vigilancias/${vrow.dataset.vid}/borrar`); cargarAp(); return;
+    }
+    return;
+  }
+  if (ev.target.closest("[data-why]")) { card.querySelector(".why").classList.toggle("open"); return; }
+  if (ev.target.closest("[data-tit]")) { ev.target.closest("[data-tit]").classList.toggle("open"); return; }
+  const b = ev.target.closest("button[data-e]");
+  if (b){
+    const it = ITEMS.find(x => x.id == id);
+    const nuevo = it.estado === b.dataset.e ? "visto" : b.dataset.e;
+    await post(`/api/items/${it.id}/estado`, {estado:nuevo});
+    it.estado = nuevo;
+    if (nuevo === "descartado") card.remove(); else card.outerHTML = tarjeta(it);
+    cargarEstado();
+    if (nuevo === "apuntado") {
+      const url = prompt("📌 Apuntado. Si tienes la URL de la página de esta convocatoria (sede electrónica, portal de empleo…), pégala para vigilar sus documentos nuevos:", "");
+      if (url && url.startsWith("http")) await post(`/api/items/${it.id}/vigilar`, {url});
+    }
+  }
+});
+$("#lista").addEventListener("submit", async ev => {
+  const f = ev.target.closest("form[data-add]"); if(!f) return;
+  ev.preventDefault();
+  const card = f.closest(".card");
+  const input = f.querySelector("input");
+  f.querySelector("button").textContent = "Leyendo…";
+  const r = await post(`/api/items/${card.dataset.id}/vigilar`, {url: input.value.trim()});
+  if (r.error) alert(r.error);
+  cargarAp();
+});
+$("#fNuevo").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const data = Object.fromEntries(new FormData(ev.target).entries());
+  ev.target.querySelector(".primary").textContent = "Añadiendo…";
+  const r = await post("/api/manual", data);
+  ev.target.querySelector(".primary").textContent = "Añadir y apuntarme";
+  if (r.error) return alert(r.error);
+  $("#dNuevo").close(); cargarAp(); cargarEstado();
+});
+$("#bBarrer").addEventListener("click", async () => {
+  const r = await post("/api/barrida");
+  $("#estado").textContent = "⏳ " + r.mensaje;
+  const t = setInterval(async () => { if (!(await cargarEstado())) { clearInterval(t); cargar(); } }, 4000);
+});
+$("#bInfo").addEventListener("click", () => $("#dInfo").showModal());
+if (window.Android) {
+  $("#bApp").hidden = false;
+  $("#bApp").addEventListener("click", () => Android.openSettings());
+}
+function segunHash(){ vista(location.hash.startsWith("#apuntado") ? "apuntado" : st.vista); }
+window.addEventListener("hashchange", segunHash);
+segunHash(); cargarEstado();
+setInterval(cargarEstado, 60000);
+</script>
+</body>
+</html>
