@@ -11,6 +11,12 @@ Radar diario de **oposiciones de informática** en boletines oficiales españole
 - **Se autovigila**: si un boletín falla o pasa varios días sin anuncios (señal de que su web ha cambiado), lanza una alerta de estado. Lo que falla se reintenta hasta 14 días.
 - **Calcula la distancia** aproximada por carretera a cada plaza con una tabla interna, sin servicios externos.
 
+## Captura
+
+<p align="center">
+  <img src="docs/capturas/radar.png" width="520" alt="Radar: convocatorias de informática puntuadas por interés, con su boletín, grupo, plazo y extracto">
+</p>
+
 ## Arquitectura
 
 ```
